@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人性的弱点 - 廉政教育模拟器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: #333;
+            font-size: 36px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+            font-style: italic;
+        }
+        
+        .game-area {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .status-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+        
+        .status-item {
+            background: white;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .status-item.danger {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 2px 10px rgba(220, 53, 69, 0.3); }
+            50% { box-shadow: 0 2px 20px rgba(220, 53, 69, 0.6); }
+            100% { box-shadow: 0 2px 10px rgba(220, 53, 69, 0.3); }
+        }
+        
+        .status-label {
+            color: #666;
+            font-size: 11px;
+            margin-bottom: 3px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        
+        .status-value {
+            font-size: 22px;
+            font-weight: bold;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            margin-top: 6px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease, background-color 0.3s ease;
+        }
+        
+        .surveillance-indicator {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #28a745;
+        }
+        
+        .surveillance-indicator.warning {
+            background: #ffc107;
+            animation: blink 1.5s infinite;
+        }
+        
+        .surveillance-indicator.danger {
+            background: #dc3545;
+            animation: blink 0.5s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        .scenario {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .scenario-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .scenario-title {
+            font-size: 20px;
+            color: #333;
+            display: flex;
+            align-items: center;
+        }
+        
+        .scenario-stage {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 3px 12px;
+            border-radius: 15px;
+            font-size: 11px;
+            margin-left: 10px;
+        }
+        
+        .scenario-counter {
+            color: #999;
+            font-size: 14px;
+        }
+        
+        .scenario-text {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .thought-bubble {
+            background: linear-gradient(135deg, #fff3cd, #ffe5b4);
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-style: italic;
+            color: #856404;
+            position: relative;
+        }
+        
+        .thought-bubble::before {
+            content: "💭";
+            position: absolute;
+            left: -10px;
+            top: -10px;
+            font-size: 24px;
+        }
+        
+        .choices {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .choice-btn {
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            font-size: 15px;
+            position: relative;
+        }
+        
+        .choice-btn:hover {
+            border-color: #764ba2;
+            background: linear-gradient(135deg, #f8f9fa, #ffffff);
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(118, 75, 162, 0.2);
+        }
+        
+        .choice-risk {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 12px;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 12px;
+        }
+        
+        .risk-low { 
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .risk-medium { 
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        .risk-high { 
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .game-over {
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(135deg, #dc3545, #a01e28);
+            color: white;
+            border-radius: 15px;
+            display: none;
+            box-shadow: 0 10px 40px rgba(220, 53, 69, 0.3);
+        }
+        
+        .game-over.success {
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+        }
+        
+        .game-over h2 {
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+        
+        .ending-stats {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .stat-line {
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .restart-btn {
+            margin-top: 20px;
+            padding: 14px 35px;
+            background: white;
+            color: #dc3545;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .success .restart-btn {
+            color: #28a745;
+        }
+        
+        .restart-btn:hover {
+            background: #f8f9fa;
+            transform: scale(1.05);
+        }
+        
+        .warning-message {
+            background: linear-gradient(135deg, #fff3cd, #ffe5b4);
+            border: 2px solid #ffc107;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .warning-message strong {
+            color: #856404;
+            display: block;
+            margin-bottom: 5px;
+            font-size: 18px;
+        }
+        
+        .stage-progress {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 0 10px;
+        }
+        
+        .stage-dot {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #999;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .stage-dot.completed {
+            background: #28a745;
+            color: white;
+        }
+        
+        .stage-dot.current {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            transform: scale(1.2);
+        }
+        
+        .stage-dot::after {
+            content: '';
+            position: absolute;
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            width: calc((100vw - 900px) / 10);
+            max-width: 50px;
+            height: 2px;
+            background: #e0e0e0;
+        }
+        
+        .stage-dot:last-child::after {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚖️ 人性的弱点</h1>
+            <p class="subtitle">廉政教育模拟器 - 体验道德抉择的心路历程</p>
+        </div>
+        
+        <div class="warning-message">
+            <strong>⚠️ 教育警示</strong>
+            本模拟器仅供廉政教育使用，通过展示人性弱点和堕落过程，提高反腐倡廉意识
+        </div>
+        
+        <div class="game-area">
+            <div class="stage-progress" id="stageProgress">
+                <!-- 动态生成阶段进度 -->
+            </div>
+            
+            <div class="status-bar">
+                <div class="status-item" id="morality-item">
+                    <div class="surveillance-indicator" id="morality-indicator"></div>
+                    <div class="status-label">道德底线</div>
+                    <div class="status-value" id="morality">100</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="morality-bar" style="width: 100%; background: #28a745;"></div>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">贪腐程度</div>
+                    <div class="status-value" id="corruption">0</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="corruption-bar" style="width: 0%; background: #dc3545;"></div>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">焦虑程度</div>
+                    <div class="status-value" id="anxiety">0</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="anxiety-bar" style="width: 0%; background: #ffc107;"></div>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">侥幸心理</div>
+                    <div class="status-value" id="luck">0</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="luck-bar" style="width: 0%; background: #6f42c1;"></div>
+                    </div>
+                </div>
+                <div class="status-item" id="surveillance-item">
+                    <div class="surveillance-indicator" id="surveillance-indicator"></div>
+                    <div class="status-label">纪委察觉</div>
+                    <div class="status-value" id="surveillance">0</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="surveillance-bar" style="width: 0%; background: #dc3545;"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="scenario" id="scenario">
+                <div class="scenario-header">
+                    <div class="scenario-title">
+                        <span id="scenario-title">初入职场</span>
+                        <span class="scenario-stage" id="stage">第一阶段</span>
+                    </div>
+                    <div class="scenario-counter" id="counter">1/10</div>
+                </div>
+                <div class="scenario-text" id="scenario-text">
+                    <!-- 动态生成场景文本 -->
+                </div>
+                <div class="thought-bubble" id="thought">
+                    <!-- 动态生成内心独白 -->
+                </div>
+                <div class="choices" id="choices">
+                    <!-- 动态生成选项 -->
+                </div>
+            </div>
+            
+            <div class="game-over" id="gameOver">
+                <h2>⚖️ 最终结局</h2>
+                <p id="ending-text" style="font-size: 18px; margin-bottom: 20px;"><!-- 结局文本 --></p>
+                <div class="ending-stats" id="endingStats">
+                    <!-- 最终统计 -->
+                </div>
+                <button class="restart-btn" onclick="restartGame()">重新开始</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 游戏状态
+        let gameState = {
+            morality: 100,
+            corruption: 0,
+            anxiety: 0,
+            luck: 0,
+            surveillance: 0,
+            stage: 0,
+            choices: []
+        };
+        
+        // 10个阶段的场景数据（已增强剧情）
+        const scenarios = [
+            {
+                title: "权力的便利",
+                stage: "第一阶段",
+                text: "你刚当上副科长，一位远房亲戚焦急地找到你，说孩子上学名额不够，希望你能跟教育部门的同事'打个招呼'。这不涉及金钱，只是利用你的职务影响力。",
+                thought: "只是打个招呼，又不是受贿，为了亲戚办点事也算人之常情吧？以后也好见面。但这也是用权力为个人谋私的开始...",
+                choices: [
+                    { text: "婉言拒绝，告诉亲戚必须按规定流程办", risk: "low", morality: 5, corruption: 0, anxiety: -5, luck: -5, surveillance: 0 },
+                    { text: "答应给相关部门的熟人打个电话'关心一下'", risk: "medium", morality: -10, corruption: 8, anxiety: 10, luck: 10, surveillance: 3 },
+                    { text: "直接给对口部门领导打电话，要求'务必解决'", risk: "high", morality: -18, corruption: 15, anxiety: 15, luck: 18, surveillance: 7 }
+                ]
+            },
+            {
+                title: "危险的'礼物'",
+                stage: "第二阶段",
+                text: "你负责一个项目审批。一位商人为了感谢你之前的'关心'，在你生日时送来一块名贵手表。他放下就走，你甚至来不及拒绝。",
+                thought: "这表太贵重了，明显超出了正常人情往来。但退回去可能会得罪他，项目后续还需要他配合。而且，这块表真的很漂亮...",
+                choices: [
+                    { text: "立刻将手表上交组织或纪委，并说明情况", risk: "low", morality: 10, corruption: -5, anxiety: -10, luck: -8, surveillance: -5 },
+                    { text: "将手表折算成现金，匿名捐赠给慈善机构", risk: "medium", morality: -8, corruption: 15, anxiety: 18, luck: 12, surveillance: 10 },
+                    { text: "偷偷收下，以后找机会'回报'他", risk: "high", morality: -25, corruption: 25, anxiety: 25, luck: 25, surveillance: 15 }
+                ]
+            },
+            {
+                title: "意外的'投资'",
+                stage: "第三阶段",
+                text: "你晋升为处长。之前那位商人找到你，说他有一个回报率极高的'内部项目'，可以让你用远低于市场的价格'投资'50万，并暗示这是稳赚不赔的买卖。",
+                thought: "这不就是变相送钱吗？但形式上是'投资'，似乎比直接收钱要安全。有了这笔钱，就能解决家里的燃眉之急了...",
+                choices: [
+                    { text: "严词拒绝，并警告他不要再有类似行为", risk: "low", morality: 12, corruption: -10, anxiety: -15, luck: -10, surveillance: -8 },
+                    { text: "犹豫不决，说需要时间考虑，看他反应", risk: "medium", morality: -15, corruption: 20, anxiety: 30, luck: 20, surveillance: 20 },
+                    { text: "用配偶或亲戚的名义'投资'这笔钱", risk: "high", morality: -35, corruption: 40, anxiety: 40, luck: 35, surveillance: 30 }
+                ]
+            },
+            {
+                title: "致命的诱惑",
+                stage: "第四阶段",
+                text: "在一次外地考察中，合作方安排了一位年轻貌美的异性作为'向导'贴身陪同，并在晚上暗示可以提供'特殊服务'。你意识到这可能是一个预设的陷阱。",
+                thought: "这是典型的'蜜罐'陷阱！一旦陷进去，就会被人抓住把柄，彻底控制。但...内心的欲望又在蠢蠢欲动...",
+                choices: [
+                    { text: "当晚借故身体不适，闭门不出，并提前结束考察", risk: "low", morality: 15, corruption: -12, anxiety: -20, luck: -15, surveillance: -10 },
+                    { text: "与'向导'保持距离，但继续享受高规格接待", risk: "medium", morality: -20, corruption: 25, anxiety: 35, luck: 25, surveillance: 25 },
+                    { text: "心存侥幸，接受了对方的'安排'", risk: "high", morality: -50, corruption: 50, anxiety: 60, luck: 40, surveillance: 45 }
+                ]
+            },
+            {
+                title: "被迫的捆绑",
+                stage: "第五阶段",
+                text: "那位商人拿来一个违规项目，要求你审批通过。当你表示为难时，他拿出了一张你和那位'向导'的亲密照片，微笑着说：'我们现在是自己人了'。",
+                thought: "完了！我被抓住了把柄。如果拒绝，他会把照片捅出去，我的家庭和事业都将毁灭。我已经被彻底绑在这条船上了。",
+                choices: [
+                    { text: "宁可身败名裂，也要拒绝签字并向组织坦白一切", risk: "low", morality: 30, corruption: -30, anxiety: 80, luck: -30, surveillance: 60 },
+                    { text: "与他谈判，表示可以有限度帮忙，试图拖延", risk: "medium", morality: -25, corruption: 40, anxiety: 65, luck: 30, surveillance: 50 },
+                    { text: "别无选择，为他违规审批，从此深度捆绑", risk: "high", morality: -60, corruption: 70, anxiety: 75, luck: 50, surveillance: 65 }
+                ]
+            },
+            {
+                title: "攻守同盟",
+                stage: "第六阶段",
+                text: "你的一位下属在工作中出现重大失误，造成了不小的损失。他私下向你求情，并暗示他知道你的一些'秘密'。帮你处理过很多脏活的上级也提醒你，不要让事情闹大。",
+                thought: "这个下属是我的心腹，知道的太多。处理他，等于引火烧身。保他，就是把我们结成一个利益共同体，一荣俱荣，一损俱损。",
+                choices: [
+                    { text: "坚持原则，按规定上报处理下属的失误", risk: "low", morality: 20, corruption: -20, anxiety: 50, luck: -20, surveillance: 40 },
+                    { text: "动用职权，将事件压下，并警告下属", risk: "medium", morality: -30, corruption: 50, anxiety: 70, luck: 40, surveillance: 60 },
+                    { text: "做得更绝，找一个替罪羊来承担所有责任", risk: "high", morality: -70, corruption: 80, anxiety: 85, luck: 60, surveillance: 75 }
+                ]
+            },
+            {
+                title: "失控的家人",
+                stage: "第七阶段",
+                text: "你的妻子/丈夫看到你'春风得意'，开始背着你以你的名义在外承包工程、收受好处。你发现后，家中爆发了激烈的争吵。",
+                thought: "家门失火，后院不宁！一旦家人的事被查出来，我一样脱不了干系。是时候悬崖勒马，还是放任自流，全家一起沉沦？",
+                choices: [
+                    { text: "强令家人退回所有非法所得，并主动向组织说明情况", risk: "low", morality: 25, corruption: -25, anxiety: -30, luck: -25, surveillance: 50 },
+                    { text: "与家人大吵一架，但最终默许，只要求他们'小心点'", risk: "medium", morality: -35, corruption: 60, anxiety: 75, luck: 45, surveillance: 70 },
+                    { text: "将错就错，利用家人作为'白手套'转移和隐藏资产", risk: "high", morality: -80, corruption: 90, anxiety: 90, luck: 65, surveillance: 85 }
+                ]
+            },
+            {
+                title: "风声鹤唳",
+                stage: "第八阶段",
+                text: "你听说上级纪委派了巡视组下来，而且你过去的某位'盟友'已经被'双规'。你感到气氛越来越紧张，夜里经常被噩梦惊醒。",
+                thought: "调查的网正在收紧，下一个会不会就是我？是坐以待毙，还是做点什么来'自救'？时间不多了。",
+                choices: [
+                    { text: "主动联系巡视组，交代自己知道的问题以求立功", risk: "low", morality: 35, corruption: -40, anxiety: -40, luck: -40, surveillance: 70 },
+                    { text: "与剩下的'盟友'串通，订立攻守同盟，统一口径", risk: "medium", morality: -40, corruption: 70, anxiety: 85, luck: 50, surveillance: 90 },
+                    { text: "立刻开始销毁证据，并准备好护照和资金准备外逃", risk: "high", morality: -90, corruption: 95, anxiety: 95, luck: 70, surveillance: 95 }
+                ]
+            },
+            {
+                title: "最后的谈话",
+                stage: "第九阶段",
+                text: "在一个安静的房间里，两位纪委的同志坐在你对面，表情严肃。他们开门见山：'我们是来找你核实一些问题的，希望你珍惜这次机会'。",
+                thought: "这一天终究还是来了。他们到底掌握了多少？是坦白从宽，还是抗拒到底？我的一个念头，将决定我的余生。",
+                choices: [
+                    { text: "心理防线崩溃，如实交代自己的全部问题", risk: "low", morality: 40, corruption: -50, anxiety: -50, luck: -50, surveillance: 98 },
+                    { text: "避重就轻，只承认一些小问题，试图蒙混过关", risk: "medium", morality: -50, corruption: 80, anxiety: 90, luck: 55, surveillance: 99 },
+                    { text: "全盘否认，声称自己是清白的，遭人陷害", risk: "high", morality: -100, corruption: 100, anxiety: 100, luck: 75, surveillance: 100 }
+                ]
+            },
+            {
+                title: "终局",
+                stage: "最终阶段",
+                text: "调查已经基本结束，证据链完整。组织给你最后一个选择：是积极退赃，说服家人配合调查，争取宽大处理；还是顽抗到底。",
+                thought: "人生没有回头路。我不仅毁了自己，也毁了家庭。现在唯一能做的，是为家人争取一个尽可能好的未来，或是一起走向毁灭。",
+                choices: [
+                    { text: "全面配合，退缴所有赃款，并规劝家人自首", risk: "low", morality: 50, corruption: -60, anxiety: -60, luck: -60, surveillance: 100 },
+                    { text: "只退部分赃款，并让家人携带资产外逃", risk: "medium", morality: -60, corruption: 90, anxiety: 95, luck: 60, surveillance: 100 },
+                    { text: "用最后的力气，威胁要举报更高级别的领导", risk: "high", morality: -100, corruption: 100, anxiety: 100, luck: 80, surveillance: 100 }
+                ]
+            }
+        ];
+        
+        // 初始化阶段进度
+        function initStageProgress() {
+            const progressDiv = document.getElementById('stageProgress');
+            progressDiv.innerHTML = '';
+            for (let i = 0; i < 10; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'stage-dot';
+                dot.textContent = i + 1;
+                dot.id = `stage-dot-${i}`;
+                progressDiv.appendChild(dot);
+            }
+        }
+        
+        // 更新阶段进度
+        function updateStageProgress() {
+            for (let i = 0; i < 10; i++) {
+                const dot = document.getElementById(`stage-dot-${i}`);
+                if (i < gameState.stage) {
+                    dot.classList.add('completed');
+                    dot.classList.remove('current');
+                } else if (i === gameState.stage) {
+                    dot.classList.add('current');
+                    dot.classList.remove('completed');
+                } else {
+                    dot.classList.remove('completed', 'current');
+                }
+            }
+        }
+        
+        // 更新状态显示
+        function updateStatus() {
+            // 更新数值
+            document.getElementById('morality').textContent = Math.max(0, Math.min(100, gameState.morality));
+            document.getElementById('corruption').textContent = Math.max(0, Math.min(100, gameState.corruption));
+            document.getElementById('anxiety').textContent = Math.max(0, Math.min(100, gameState.anxiety));
+            document.getElementById('luck').textContent = Math.max(0, Math.min(100, gameState.luck));
+            document.getElementById('surveillance').textContent = Math.max(0, Math.min(100, gameState.surveillance));
+            
+            // 更新进度条
+            document.getElementById('morality-bar').style.width = gameState.morality + '%';
+            document.getElementById('corruption-bar').style.width = gameState.corruption + '%';
+            document.getElementById('anxiety-bar').style.width = gameState.anxiety + '%';
+            document.getElementById('luck-bar').style.width = gameState.luck + '%';
+            document.getElementById('surveillance-bar').style.width = gameState.surveillance + '%';
+            
+            // 根据数值改变颜色
+            const moralityBar = document.getElementById('morality-bar');
+            if (gameState.morality > 70) {
+                moralityBar.style.background = '#28a745';
+            } else if (gameState.morality > 30) {
+                moralityBar.style.background = '#ffc107';
+            } else {
+                moralityBar.style.background = '#dc3545';
+            }
+            
+            // 更新监察指示器
+            const surveillanceIndicator = document.getElementById('surveillance-indicator');
+            const surveillanceItem = document.getElementById('surveillance-item');
+            if (gameState.surveillance >= 70) {
+                surveillanceIndicator.className = 'surveillance-indicator danger';
+                surveillanceItem.classList.add('danger');
+            } else if (gameState.surveillance >= 40) {
+                surveillanceIndicator.className = 'surveillance-indicator warning';
+                surveillanceItem.classList.remove('danger');
+            } else {
+                surveillanceIndicator.className = 'surveillance-indicator';
+                surveillanceItem.classList.remove('danger');
+            }
+            
+            // 道德指示器
+            const moralityIndicator = document.getElementById('morality-indicator');
+            if (gameState.morality <= 30) {
+                moralityIndicator.className = 'surveillance-indicator danger';
+            } else if (gameState.morality <= 60) {
+                moralityIndicator.className = 'surveillance-indicator warning';
+            } else {
+                moralityIndicator.className = 'surveillance-indicator';
+            }
+        }
+        
+        // 显示场景
+        function showScenario(index) {
+            // 任何一个指标达到临界值，游戏结束
+            if (index >= scenarios.length || gameState.corruption >= 100 || gameState.morality <= 0 || gameState.surveillance >= 100) {
+                endGame();
+                return;
+            }
+            
+            const scenario = scenarios[index];
+            document.getElementById('scenario-title').textContent = scenario.title;
+            document.getElementById('stage').textContent = scenario.stage;
+            document.getElementById('counter').textContent = `${index + 1}/10`;
+            document.getElementById('scenario-text').textContent = scenario.text;
+            document.getElementById('thought').innerHTML = scenario.thought;
+            
+            // 生成选项
+            const choicesDiv = document.getElementById('choices');
+            choicesDiv.innerHTML = '';
+            
+            scenario.choices.forEach((choice, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'choice-btn';
+                btn.innerHTML = `
+                    ${choice.text}
+                    <span class="choice-risk risk-${choice.risk}">
+                        ${choice.risk === 'low' ? '低风险' : choice.risk === 'medium' ? '中风险' : '高风险'}
+                    </span>
+                `;
+                btn.onclick = () => makeChoice(choice, index);
+                choicesDiv.appendChild(btn);
+            });
+            
+            updateStageProgress();
+        }
+        
+        // 做出选择
+        function makeChoice(choice, scenarioIndex) {
+            // 更新状态
+            gameState.morality += choice.morality;
+            gameState.corruption += choice.corruption;
+            gameState.anxiety += choice.anxiety;
+            gameState.luck += choice.luck;
+            gameState.surveillance += choice.surveillance;
+            
+            // 确保数值在0-100之间
+            gameState.morality = Math.max(0, Math.min(100, gameState.morality));
+            gameState.corruption = Math.max(0, Math.min(100, gameState.corruption));
+            gameState.anxiety = Math.max(0, Math.min(100, gameState.anxiety));
+            gameState.luck = Math.max(0, Math.min(100, gameState.luck));
+            gameState.surveillance = Math.max(0, Math.min(100, gameState.surveillance));
+            
+            // 记录选择
+            gameState.choices.push(choice);
+            
+            // 更新显示
+            updateStatus();
+            
+            // 进入下一个场景
+            setTimeout(() => {
+                gameState.stage++;
+                showScenario(scenarioIndex + 1);
+            }, 500);
+        }
+        
+        // 游戏结束
+        function endGame() {
+            document.getElementById('scenario').style.display = 'none';
+            document.getElementById('gameOver').style.display = 'block';
+            
+            let ending = '';
+            let endingClass = ''; // 用于设置结局背景颜色
+            
+            if (gameState.surveillance >= 100) {
+                ending = '纪委的调查已经完成，你的所有违纪违法行为都被查清。等待你的将是法律的严惩。多行不义必自毙，贪腐之路的尽头只有毁灭。';
+                endingClass = ''; // 默认红色
+            } else if (gameState.morality >= 80) {
+                ending = '你始终保持了清正廉洁，成为了人民的好公仆。虽然诱惑重重，但你坚守住了道德底线，赢得了组织的信任和群众的尊重。';
+                endingClass = 'success'; // 绿色
+                document.getElementById('gameOver').classList.add('success');
+            } else if (gameState.corruption >= 80) {
+                ending = '你已经完全堕落，成为了人民的罪人。贪腐不仅毁了你的前程，还给家人带来了无尽的痛苦和耻辱。你的名字将永远钉在耻辱柱上。';
+                endingClass = '';
+            } else if (gameState.anxiety >= 90) {
+                ending = '长期的焦虑和恐惧已经摧毁了你的身心。你活在随时可能被发现的恐惧中，这种精神折磨比任何惩罚都要痛苦。';
+                endingClass = '';
+            } else if (gameState.morality <= 20) {
+                ending = '道德完全沦丧，你已经变成了另一个人。曾经的理想和信念都被抛弃，剩下的只有对金钱和权力的贪婪。';
+                endingClass = '';
+            } else {
+                ending = '你在善恶之间摇摆，虽未完全堕落，但也偏离了正道。人生还有机会回头，关键看你如何选择。';
+                endingClass = '';
+            }
+            
+            document.getElementById('ending-text').textContent = ending;
+            
+            // 显示最终统计
+            const stats = `
+                <div class="stat-line">
+                    <span>道德底线：</span>
+                    <span>${gameState.morality}%</span>
+                </div>
+                <div class="stat-line">
+                    <span>贪腐程度：</span>
+                    <span>${gameState.corruption}%</span>
+                </div>
+                <div class="stat-line">
+                    <span>纪委察觉度：</span>
+                    <span>${gameState.surveillance}%</span>
+                </div>
+                <div class="stat-line">
+                    <span>完成阶段：</span>
+                    <span>${gameState.stage}/10</span>
+                </div>
+            `;
+            document.getElementById('endingStats').innerHTML = stats;
+        }
+        
+        // 重新开始
+        function restartGame() {
+            gameState = {
+                morality: 100,
+                corruption: 0,
+                anxiety: 0,
+                luck: 0,
+                surveillance: 0,
+                stage: 0,
+                choices: []
+            };
+            
+            document.getElementById('gameOver').classList.remove('success'); // 移除成功样式
+            updateStatus();
+            initStageProgress();
+            document.getElementById('scenario').style.display = 'block';
+            document.getElementById('gameOver').style.display = 'none';
+            showScenario(0);
+        }
+        
+        // 初始化游戏
+        initStageProgress();
+        updateStatus();
+        showScenario(0);
+    </script>
+</body>
+</html>
